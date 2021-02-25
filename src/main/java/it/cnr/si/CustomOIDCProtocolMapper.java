@@ -1,3 +1,7 @@
+package it.cnr.si;
+
+import it.cnr.si.service.AceService;
+import it.cnr.si.service.dto.anagrafica.simpleweb.SimpleRuoloWebDto;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
@@ -6,11 +10,11 @@ import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.mappers.*;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.AccessToken;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class CustomOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
@@ -76,10 +80,27 @@ public class CustomOIDCProtocolMapper extends AbstractOIDCProtocolMapper impleme
 //        return token;
 //    }
 
+
     public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession keycloakSession,
                                             UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
 
         token.getOtherClaims().put("supiri", "token_supiri");
+
+        ApplicationContext context = new ClassPathXmlApplicationContext("file:/context.xml");
+        AceService aceService = (AceService)context.getBean("aceService");
+        List<SimpleRuoloWebDto> simpleRuoloWebDtos = aceService.ruoliAttivi("fabrizio.pierleoni");
+
+        AccessToken.Access contexts = new AccessToken.Access().roles(
+                simpleRuoloWebDtos.stream()
+                .map(a -> a.getSigla())
+                .collect(Collectors.toSet())
+        );
+
+        token.getOtherClaims().put("contexts", contexts);
+
+
+        //Map<String, AccessToken.Access> resourceAccess ;
+        //token.getResourceAccess().put("test", access);
 
         setClaim(token, mappingModel, userSession, keycloakSession, clientSessionCtx);
         return token;

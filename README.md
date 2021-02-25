@@ -20,7 +20,7 @@ Place a file with the fileName org.keycloak.protocol.ProtocolMapper inside \src\
 Inside this file write to Name of your custom Provider - then keycloak knows that this class is available as Protocol Mapper
 can add multiple file names
 
-CustomOIDCProtocolMapper
+it.cnr.si.CustomOIDCProtocolMapper
 
 Deployment Structure XML
 In custom mapper use files from keycloak. In order to use them it's needed to inform jboss about this dependency. Therefore create a file jboss-deployment-structure.xml inside \src\main\resources\META-INF\ Content:
