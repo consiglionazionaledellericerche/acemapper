@@ -5,14 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>it.cnr.si</groupId>
-    <artifactId>keycloak-customProtocolMapper</artifactId>
+    <artifactId>keycloak-aceProtocolMapper</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
         <keycloak.version>12.0.0</keycloak.version>
-        <ace.version>3.0.15</ace.version>
+        <ace.version>5.0.0-SNAPSHOT</ace.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
+        <javax.inject.version>1</javax.inject.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
@@ -70,51 +71,10 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <version>${spring-boot.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-config</artifactId>
-            <version>5.2.7.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>5.2.7.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-beans</artifactId>
-            <version>5.2.7.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>5.2.7.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-asm</artifactId>
-            <version>5.2.7.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-expression</artifactId>
-            <version>5.2.7.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>5.2.7.RELEASE</version>
-        </dependency>
-        <dependency>
             <groupId>it.cnr.si</groupId>
-            <artifactId>ace-client</artifactId>
+            <artifactId>keycloak-ace-client</artifactId>
             <version>${ace.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -123,16 +83,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.2.4</version>
-                <configuration>
-                    <transformers>
-                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                            <resource>META-INF/spring.handlers</resource>
-                        </transformer>
-                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                            <resource>META-INF/spring.schemas</resource>
-                        </transformer>
-                    </transformers>
-                </configuration>
                 <executions>
                     <execution>
                         <id>assemble-all</id>
