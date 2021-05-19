@@ -66,6 +66,7 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
         // ldap o spid username
         String username = userSession.getUser().getUsername();
         try {
+<<<<<<< HEAD
 
             // nel caso di username spid
             if(username.toUpperCase().startsWith("TINIT")) {
@@ -74,6 +75,18 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
                     String codiceFiscale = username.substring(6).toUpperCase();
                     String ldapUsername = aceService.getUtenteByCodiceFiscale(codiceFiscale).getUsername().toLowerCase();
                     //userSession.getUser().setUsername(ldapUsername);
+=======
+            // ldap o spid username
+            String username = userSession.getUser().getUsername();
+
+            // nel caso di username spid
+            if(username.startsWith("TINIT")) {
+
+                try {
+                    String codiceFiscale = username.substring(6).toUpperCase(Locale.ROOT);
+                    String ldapUsername = aceService.getUtenteByCodiceFiscale(codiceFiscale).getUsername();
+                    userSession.getUser().setUsername(ldapUsername);
+>>>>>>> b87c6735bc8e5a167ed22d299944cb910d76b306
                     username = ldapUsername;
                 } catch (Exception e) {
                     LOGGER.info("utente " + username + " spid non presente in ldap");
@@ -105,6 +118,53 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
         token.getOtherClaims().put("contexts", contexts);
         token.getOtherClaims().put("preferred_username", username);
         token.getOtherClaims().put("username_cnr", username);
+
+    }
+
+    protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, KeycloakSession keycloakSession,
+    ClientSessionContext clientSessionCtx) {
+        Map<String, Map<String, Set<String>>> contexts = new HashMap<>();
+
+        try {
+            // ldap o spid username
+            String username = userSession.getUser().getUsername();
+
+            // nel caso di username spid
+            if(username.startsWith("TINIT")) {
+
+                try {
+                    String codiceFiscale = username.substring(6).toUpperCase(Locale.ROOT);
+                    String ldapUsername = aceService.getUtenteByCodiceFiscale(codiceFiscale).getUsername();
+                    userSession.getUser().setUsername(ldapUsername);
+                    username = ldapUsername;
+                } catch (Exception e) {
+                    LOGGER.info("utente " + username + " spid non presente in ldap");
+                }
+            }
+
+            LOGGER.info(username);
+
+            List<SimpleRuoloWebDto> simpleRuoloWebDtos = aceService.ruoliAttivi(username);
+
+            List<String> contesti = simpleRuoloWebDtos.stream()
+                    .map(r -> r.getContesto().getSigla())
+                    .collect(Collectors.toList());
+
+            for(String contesto: contesti) {
+                Set<String> ruoli = simpleRuoloWebDtos.stream()
+                        .filter(a -> a.getContesto().getSigla().equals(contesto))
+                        .map(a -> a.getSigla())
+                        .collect(Collectors.toSet());
+
+                Map<String, Set<String>> mappa = new HashMap<>();
+                mappa.put("roles", ruoli);
+                contexts.put(contesto, mappa);
+            }
+
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
+        token.getOtherClaims().put("contexts", contexts);
 
     }
 

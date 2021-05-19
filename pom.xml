@@ -6,12 +6,12 @@
 
     <groupId>it.cnr.si</groupId>
     <artifactId>keycloak-aceProtocolMapper</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
-        <keycloak.version>12.0.0</keycloak.version>
-        <ace.version>5.0.0-SNAPSHOT</ace.version>
+        <keycloak.version>12.0.4</keycloak.version>
+        <ace.version>5.0.1-SNAPSHOT</ace.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
         <javax.inject.version>1</javax.inject.version>
         <maven.compiler.source>1.8</maven.compiler.source>
