@@ -66,27 +66,13 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
         // ldap o spid username
         String username = userSession.getUser().getUsername();
         try {
-<<<<<<< HEAD
 
             // nel caso di username spid
             if(username.toUpperCase().startsWith("TINIT")) {
 
                 try {
                     String codiceFiscale = username.substring(6).toUpperCase();
-                    String ldapUsername = aceService.getUtenteByCodiceFiscale(codiceFiscale).getUsername().toLowerCase();
-                    //userSession.getUser().setUsername(ldapUsername);
-=======
-            // ldap o spid username
-            String username = userSession.getUser().getUsername();
-
-            // nel caso di username spid
-            if(username.startsWith("TINIT")) {
-
-                try {
-                    String codiceFiscale = username.substring(6).toUpperCase(Locale.ROOT);
                     String ldapUsername = aceService.getUtenteByCodiceFiscale(codiceFiscale).getUsername();
-                    userSession.getUser().setUsername(ldapUsername);
->>>>>>> b87c6735bc8e5a167ed22d299944cb910d76b306
                     username = ldapUsername;
                 } catch (Exception e) {
                     LOGGER.info("utente " + username + " spid non presente in ldap");
