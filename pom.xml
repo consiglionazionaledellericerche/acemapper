@@ -4,6 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <artifactId>archetype</artifactId>
+        <groupId>it.cnr.si</groupId>
+        <version>1.1.0</version>
+    </parent>
+
     <groupId>it.cnr.si</groupId>
     <artifactId>keycloak-aceProtocolMapper</artifactId>
     <version>1.0.1-SNAPSHOT</version>
@@ -17,6 +23,12 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+
+    <scm>
+        <connection>scm:git:ssh://git@git.si.cnr.it/keycloak/AceMapper.git</connection>
+        <developerConnection>scm:git:ssh://git@git.si.cnr.it/keycloak/AceMapper.git</developerConnection>
+    </scm>
+
 
     <dependencies>
         <!-- provided keycloak dependencies -->
