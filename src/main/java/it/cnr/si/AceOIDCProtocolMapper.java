@@ -2,7 +2,6 @@ package it.cnr.si;
 
 import it.cnr.si.service.AceService;
 import it.cnr.si.service.dto.anagrafica.simpleweb.SimpleRuoloWebDto;
-import it.cnr.si.service.dto.anagrafica.simpleweb.UtenteWebDto;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
@@ -10,7 +9,6 @@ import org.keycloak.models.UserSessionModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.protocol.oidc.mappers.*;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.representations.AccessToken;
 
 import java.util.*;
 import org.jboss.logging.Logger;
