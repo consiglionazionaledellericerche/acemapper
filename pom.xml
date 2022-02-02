@@ -10,7 +10,7 @@
 
     <groupId>it.cnr.si</groupId>
     <artifactId>keycloak-aceProtocolMapper</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -25,7 +25,7 @@
     <scm>
         <connection>scm:git:ssh://git@git.si.cnr.it/keycloak/AceMapper.git</connection>
         <developerConnection>scm:git:ssh://git@git.si.cnr.it/keycloak/AceMapper.git</developerConnection>
-      <tag>1.0.5</tag>
+      <tag>HEAD</tag>
   </scm>
 
 
