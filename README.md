@@ -6,8 +6,6 @@ META-INF/services File with the name org.keycloak.protocol.ProtocolMapper must b
 
 jboss-deployment-structure.xml need to be available to use keycloak built in classes
 
-Jar File is deployed in /opt/jboss/keycloak/standalone/deployments/
-
 custom Mapper
 use POM.xml and resolve dependencies
 Extend AbstractOIDCProtocolMapper and need to implement all abstract methods. If want to have a SAML Protocol Mapper then it's another base class (AbstractSAMLProtocolMapper)
