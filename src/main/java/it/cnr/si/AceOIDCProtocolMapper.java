@@ -15,7 +15,9 @@ import java.util.*;
 import org.jboss.logging.Logger;
 import org.keycloak.representations.IDToken;
 
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
@@ -60,7 +62,7 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
     protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession,
                             KeycloakSession keycloakSession, ClientSessionContext clientSessionCtx) {
 
-        Map<String, Map<String, Map<String, Map>>> contexts = new HashMap<>();
+        Map contexts = new HashMap();
 
         // ldap o spid username
         String username = userSession.getUser().getUsername();
@@ -80,23 +82,39 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
 
             LOGGER.info(username);
 
+            // ruoli
             List<SimpleRuoloWebDto> simpleRuoloWebDtos = aceService.ruoliAttivi(username);
 
             List<String> contesti = simpleRuoloWebDtos.stream()
                     .map(r -> r.getContesto().getSigla())
                     .collect(Collectors.toList());
 
-            final String user = username;
             for(String contesto: contesti) {
-                Map<String, Map> rolesWithEo = simpleRuoloWebDtos.stream()
-                        .filter(r -> r.getContesto().getSigla().equals(contesto))
-                        .map(r -> r.getSigla())
-                        .collect(Collectors.toMap(r -> r, r -> getEoRolesFromContext(user, contesto, r)));
+                Set<String> ruoli = simpleRuoloWebDtos.stream()
+                        .filter(a -> a.getContesto().getSigla().equals(contesto))
+                        .map(a -> a.getSigla())
+                        .collect(Collectors.toSet());
 
-                Map<String, Map<String, Map>> mappa = new HashMap<>();
-                mappa.put("roles", rolesWithEo);
+                Map<String, Set<String>> mappa = new HashMap<>();
+                mappa.put("roles", ruoli);
                 contexts.put(contesto, mappa);
             }
+
+            // eo
+            final String user = username;
+            for(String contesto: contesti) {
+                Map<String, List> rolesWithEo = simpleRuoloWebDtos
+                        .stream()
+                        .filter(r -> r.getContesto().getSigla().equals(contesto))
+                        .map(r -> r.getSigla())
+                        .filter(r -> !getEoRolesFromContext(user, contesto, r).isEmpty())
+                        .collect(Collectors.toMap(r -> r, r -> getEoRolesFromContext(user, contesto, r)));
+
+                if(!rolesWithEo.isEmpty()) {
+                    ((Map) contexts.get(contesto)).put("entitaOrganizzative", rolesWithEo);
+                }
+            }
+
 
         } catch (Exception e) {
             LOGGER.error(e);
@@ -108,17 +126,18 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
 
     }
 
-    private Map getEoRolesFromContext(String username, String context, String role) {
+    private List getEoRolesFromContext(String username, String context, String role) {
         return aceService.ruoliEoAttivi(username).stream()
                 .filter(r -> r.getRuolo().getContesto().getSigla().equals(context))
                 .filter(r -> r.getRuolo().getSigla().equals(role))
                 .filter(r -> Optional.ofNullable(r.getEntitaOrganizzativa()).isPresent())
                 .map(BossDto::getEntitaOrganizzativa)
-                .collect(Collectors.toMap(r -> "eo", r -> new HashMap(){{
+                .map(r -> new HashMap(){{
                     put("id", r.getId());
                     put("idnsip", r.getIdnsip());
                     put("sigla", r.getSigla());
-                }}));
+                }})
+                .collect(Collectors.toList());
     }
 
     public static ProtocolMapperModel create(String name, boolean accessToken, boolean idToken, boolean userInfo) {
