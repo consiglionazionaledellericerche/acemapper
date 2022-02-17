@@ -1,6 +1,7 @@
 package it.cnr.si;
 
 import it.cnr.si.service.AceService;
+import it.cnr.si.service.dto.anagrafica.scritture.BossDto;
 import it.cnr.si.service.dto.anagrafica.simpleweb.SimpleRuoloWebDto;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
@@ -59,7 +60,7 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
     protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession,
                             KeycloakSession keycloakSession, ClientSessionContext clientSessionCtx) {
 
-        Map<String, Map<String, Set<String>>> contexts = new HashMap<>();
+        Map<String, Map<String, Map<String, Map>>> contexts = new HashMap<>();
 
         // ldap o spid username
         String username = userSession.getUser().getUsername();
@@ -85,24 +86,39 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
                     .map(r -> r.getContesto().getSigla())
                     .collect(Collectors.toList());
 
+            final String user = username;
             for(String contesto: contesti) {
-                Set<String> ruoli = simpleRuoloWebDtos.stream()
-                        .filter(a -> a.getContesto().getSigla().equals(contesto))
-                        .map(a -> a.getSigla())
-                        .collect(Collectors.toSet());
+                Map<String, Map> rolesWithEo = simpleRuoloWebDtos.stream()
+                        .filter(r -> r.getContesto().getSigla().equals(contesto))
+                        .map(r -> r.getSigla())
+                        .collect(Collectors.toMap(r -> r, r -> getEoRolesFromContext(user, contesto, r)));
 
-                Map<String, Set<String>> mappa = new HashMap<>();
-                mappa.put("roles", ruoli);
+                Map<String, Map<String, Map>> mappa = new HashMap<>();
+                mappa.put("roles", rolesWithEo);
                 contexts.put(contesto, mappa);
             }
 
         } catch (Exception e) {
             LOGGER.error(e);
         }
+
         token.getOtherClaims().put("contexts", contexts);
         token.getOtherClaims().put("preferred_username", username);
         token.getOtherClaims().put("username_cnr", username);
 
+    }
+
+    private Map getEoRolesFromContext(String username, String context, String role) {
+        return aceService.ruoliEoAttivi(username).stream()
+                .filter(r -> r.getRuolo().getContesto().getSigla().equals(context))
+                .filter(r -> r.getRuolo().getSigla().equals(role))
+                .filter(r -> Optional.ofNullable(r.getEntitaOrganizzativa()).isPresent())
+                .map(BossDto::getEntitaOrganizzativa)
+                .collect(Collectors.toMap(r -> "eo", r -> new HashMap(){{
+                    put("id", r.getId());
+                    put("idnsip", r.getIdnsip());
+                    put("sigla", r.getSigla());
+                }}));
     }
 
     public static ProtocolMapperModel create(String name, boolean accessToken, boolean idToken, boolean userInfo) {
