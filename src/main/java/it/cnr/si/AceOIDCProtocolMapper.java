@@ -23,18 +23,6 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
-    public static final String ACE_CONTEXT_CONFIG = "ace.context";
-
-    static {
-        ProviderConfigProperty property;
-        property = new ProviderConfigProperty();
-        property.setName(ACE_CONTEXT_CONFIG);
-        property.setLabel("Ace Context");
-        property.setHelpText("Insert Ace Context Value");
-        property.setType(ProviderConfigProperty.STRING_TYPE);
-        configProperties.add(property);
-    }
-
     static {
         OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, FullNameMapper.class);
     }
@@ -74,8 +62,6 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
     protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession,
                             KeycloakSession keycloakSession, ClientSessionContext clientSessionCtx) {
 
-        String aceContext = mappingModel.getConfig().get(ACE_CONTEXT_CONFIG);
-
         Map contexts = new HashMap();
 
         // ldap o spid username
@@ -99,21 +85,23 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
             // ruoli
             List<SimpleRuoloWebDto> simpleRuoloWebDtos = aceService.ruoliAttivi(username);
 
-            Set<String> ruoli = aceService.ruoliAttivi(username).stream()
-                    .filter(a -> a.getContesto().getSigla().equals(aceContext))
-                    .map(a -> a.getSigla())
-                    .collect(Collectors.toSet());
-
-            Map<String, Set<String>> mappa = new HashMap<>();
-            mappa.put("roles", ruoli);
-            contexts.put(aceContext, mappa);
-
-            // eo
-            final String user = username;
             List<String> contesti = simpleRuoloWebDtos.stream()
                     .map(r -> r.getContesto().getSigla())
                     .collect(Collectors.toList());
 
+            for(String contesto: contesti) {
+                Set<String> ruoli = simpleRuoloWebDtos.stream()
+                        .filter(a -> a.getContesto().getSigla().equals(contesto))
+                        .map(a -> a.getSigla())
+                        .collect(Collectors.toSet());
+
+                Map<String, Set<String>> mappa = new HashMap<>();
+                mappa.put("roles", ruoli);
+                contexts.put(contesto, mappa);
+            }
+
+            // eo
+            final String user = username;
             for(String contesto: contesti) {
                 Map<String, List> rolesWithEo = simpleRuoloWebDtos
                         .stream()
