@@ -107,8 +107,6 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
                 List<List<SsoModelWebDto>> rolesWithEo = simpleRuoloWebDtos
                         .stream()
                         .filter(r -> r.getContesto().getSigla().equals(contesto))
-                        .map(r -> r.getSigla())
-                        .filter(r -> !aceService.ruoliSsoAttivi(user, contesto).isEmpty())
                         .map(r -> aceService.ruoliSsoAttivi(user, contesto))
                         .collect(Collectors.toList());
 
