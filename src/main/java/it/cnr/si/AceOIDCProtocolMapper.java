@@ -104,11 +104,13 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
             // eo
             final String user = username;
             for(String contesto: contesti) {
-                List<List<SsoModelWebDto>> rolesWithEo = simpleRuoloWebDtos
+                List<SsoModelWebDto> rolesWithEo = simpleRuoloWebDtos
                         .stream()
                         .filter(r -> r.getContesto().getSigla().equals(contesto))
                         .map(r -> aceService.ruoliSsoAttivi(user, contesto))
-                        .collect(Collectors.toList());
+                        .findAny()
+                        .get();
+
 
                 ((Map)contexts.get(contesto)).put("rolesEo", rolesWithEo);
             }
