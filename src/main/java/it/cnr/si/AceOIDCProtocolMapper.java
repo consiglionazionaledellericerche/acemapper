@@ -3,6 +3,7 @@ package it.cnr.si;
 import it.cnr.si.service.AceService;
 import it.cnr.si.service.dto.anagrafica.scritture.BossDto;
 import it.cnr.si.service.dto.anagrafica.simpleweb.SimpleRuoloWebDto;
+import it.cnr.si.service.dto.anagrafica.simpleweb.SsoModelWebDto;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.ProtocolMapperModel;
@@ -103,11 +104,12 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
             // eo
             final String user = username;
             for(String contesto: contesti) {
-                List<String> rolesWithEo = simpleRuoloWebDtos
+                List<List<SsoModelWebDto>> rolesWithEo = simpleRuoloWebDtos
                         .stream()
                         .filter(r -> r.getContesto().getSigla().equals(contesto))
                         .map(r -> r.getSigla())
                         .filter(r -> !aceService.ruoliSsoAttivi(user, contesto).isEmpty())
+                        .map(r -> aceService.ruoliSsoAttivi(user, contesto))
                         .collect(Collectors.toList());
 
                 ((Map)contexts.get(contesto)).put("rolesEo", rolesWithEo);
