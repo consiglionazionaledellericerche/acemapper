@@ -16,16 +16,22 @@ import java.util.*;
 import org.jboss.logging.Logger;
 import org.keycloak.representations.IDToken;
 
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements OIDCAccessTokenMapper, OIDCIDTokenMapper, UserInfoTokenMapper {
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
+    public static final String ACE_CONTEXT_CONFIG = "ace.contexts";
+
     static {
-        OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, FullNameMapper.class);
+        ProviderConfigProperty property;
+        property = new ProviderConfigProperty();
+        property.setName(ACE_CONTEXT_CONFIG);
+        property.setLabel("Ace Contexts");
+        property.setHelpText("Insert Ace Contexts Value (comma separated value)");
+        property.setType(ProviderConfigProperty.STRING_TYPE);
+        configProperties.add(property);
     }
 
     public static final String PROVIDER_ID = "oidc-customprotocolmapper";
@@ -86,7 +92,9 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
             // ruoli
             List<SimpleRuoloWebDto> simpleRuoloWebDtos = aceService.ruoliAttivi(username);
 
+            String aceContexts = mappingModel.getConfig().get(ACE_CONTEXT_CONFIG);
             List<String> contesti = simpleRuoloWebDtos.stream()
+                    .filter(r -> contextFilter(r, aceContexts))
                     .map(r -> r.getContesto().getSigla())
                     .collect(Collectors.toList());
 
@@ -123,6 +131,20 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
         token.getOtherClaims().put("preferred_username", username);
         token.getOtherClaims().put("username_cnr", username);
 
+    }
+
+    /*
+     * se non è stato inserito alcun contesto nella maschera di definizione del mapper
+     * ritorna tutti i contesti, altrimenti solo quello dichiarato; inotre è possibile
+     * specificare un insieme di contesti separati dalla virgola
+     */
+    private boolean contextFilter(SimpleRuoloWebDto role, String aceContexts) {
+        if(aceContexts != null && !aceContexts.equals("")){
+            return true;
+        } else {
+            return Arrays.asList(aceContexts.split(","))
+                    .contains(role.getContesto().getSigla());
+        }
     }
 
     private List getEoRolesFromContext(String username, String context, String role) {
