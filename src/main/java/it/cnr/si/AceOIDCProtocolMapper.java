@@ -143,11 +143,10 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
      */
     private boolean contextFilter(SimpleRuoloWebDto role, String aceContexts) {
         if(aceContexts != null && !aceContexts.equals("")){
-            return true;
-        } else {
             return Arrays.asList(aceContexts.split(","))
                     .contains(role.getContesto().getSigla());
         }
+        return true;
     }
 
     private List getEoRolesFromContext(String username, String context, String role) {
