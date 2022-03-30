@@ -93,10 +93,13 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
             List<SimpleRuoloWebDto> simpleRuoloWebDtos = aceService.ruoliAttivi(username);
 
             String aceContexts = mappingModel.getConfig().get(ACE_CONTEXT_CONFIG);
+            LOGGER.info("ACE Mapper configurato con il contesto di ACE: " + aceContexts);
             List<String> contesti = simpleRuoloWebDtos.stream()
                     .filter(r -> contextFilter(r, aceContexts))
                     .map(r -> r.getContesto().getSigla())
                     .collect(Collectors.toList());
+            LOGGER.info("Contesti di ACE caricati: " + contesti);
+
 
             for(String contesto: contesti) {
                 Set<String> ruoli = simpleRuoloWebDtos.stream()
