@@ -23,6 +23,7 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     public static final String ACE_CONTEXT_CONFIG = "ace.contexts";
+    public static final String ROLES_EO = "rolesEo";
 
     static {
         ProviderConfigProperty property;
@@ -100,7 +101,7 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
                     .collect(Collectors.toList());
             LOGGER.info("Contesti di ACE caricati: " + contesti);
 
-
+            final String user = username;
             for(String contesto: contesti) {
                 Set<String> ruoli = simpleRuoloWebDtos.stream()
                         .filter(a -> a.getContesto().getSigla().equals(contesto))
@@ -110,22 +111,16 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
                 Map<String, Set<String>> mappa = new HashMap<>();
                 mappa.put("roles", ruoli);
                 contexts.put(contesto, mappa);
+                // Ruoli assegnti su una specifica Entità organizzativa
+                final List<SsoModelWebDto> rolesWithEo =
+                        aceService.ruoliSsoAttivi(user, contesto)
+                                .stream()
+                                .filter(ssoModelWebDto -> !ssoModelWebDto.getEntitaOrganizzative().isEmpty())
+                                .collect(Collectors.toList());
+                if (!rolesWithEo.isEmpty()) {
+                    ((Map)contexts.get(contesto)).put(ROLES_EO, rolesWithEo);
+                }
             }
-
-            // eo
-            final String user = username;
-            for(String contesto: contesti) {
-                List<SsoModelWebDto> rolesWithEo = simpleRuoloWebDtos
-                        .stream()
-                        .filter(r -> r.getContesto().getSigla().equals(contesto))
-                        .map(r -> aceService.ruoliSsoAttivi(user, contesto))
-                        .findAny()
-                        .get();
-
-
-                ((Map)contexts.get(contesto)).put("rolesEo", rolesWithEo);
-            }
-
         } catch (Exception e) {
             LOGGER.error(e);
         }
