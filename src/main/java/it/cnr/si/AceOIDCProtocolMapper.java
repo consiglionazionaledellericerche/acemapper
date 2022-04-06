@@ -1,6 +1,7 @@
 package it.cnr.si;
 
 import it.cnr.si.service.AceService;
+import it.cnr.si.service.dto.anagrafica.UserInfoDto;
 import it.cnr.si.service.dto.anagrafica.scritture.BossDto;
 import it.cnr.si.service.dto.anagrafica.simpleweb.SimpleRuoloWebDto;
 import it.cnr.si.service.dto.anagrafica.simpleweb.SsoModelWebDto;
@@ -14,6 +15,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 
 import java.util.*;
 import org.jboss.logging.Logger;
+import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.IDToken;
 
 import java.util.stream.Collectors;
@@ -156,6 +158,14 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
                     put("sigla", r.getSigla());
                 }})
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public AccessToken transformUserInfoToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
+        AccessToken accessToken = super.transformUserInfoToken(token, mappingModel, session, userSession, clientSessionCtx);
+        String username = userSession.getUser().getUsername();
+        accessToken.getOtherClaims().put("userInfo", aceService.getUserInfoDto(username));
+        return accessToken;
     }
 
     public static ProtocolMapperModel create(String name, boolean accessToken, boolean idToken, boolean userInfo) {
