@@ -79,7 +79,7 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
         try {
 
             // nel caso di username spid
-            if(username.toUpperCase().startsWith("TINIT")) {
+            if(isSpidUsername(username)) {
 
                 try {
                     String codiceFiscale = username.substring(6).toUpperCase();
@@ -160,14 +160,15 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
                 .collect(Collectors.toList());
     }
 
+    private boolean isSpidUsername(String username) {
+        return username.toUpperCase().startsWith("TINIT");
+    }
+
     @Override
     public AccessToken transformUserInfoToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         AccessToken accessToken = super.transformUserInfoToken(token, mappingModel, session, userSession, clientSessionCtx);
         String username = userSession.getUser().getUsername();
-        if (Optional.ofNullable(accessToken.getOtherClaims().get("is_cnr_user"))
-                .filter(Boolean.class::isInstance)
-                .map(Boolean.class::cast)
-                .orElse(Boolean.FALSE)) {
+        if (!isSpidUsername(username)) {
             accessToken.getOtherClaims().put("userInfo", aceService.getUserInfoDto(username));
         }
         return accessToken;
