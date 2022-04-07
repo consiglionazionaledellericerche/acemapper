@@ -164,7 +164,12 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
     public AccessToken transformUserInfoToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
         AccessToken accessToken = super.transformUserInfoToken(token, mappingModel, session, userSession, clientSessionCtx);
         String username = userSession.getUser().getUsername();
-        accessToken.getOtherClaims().put("userInfo", aceService.getUserInfoDto(username));
+        if (Optional.ofNullable(accessToken.getOtherClaims().get("is_user_cnr"))
+                .filter(Boolean.class::isInstance)
+                .map(Boolean.class::cast)
+                .orElse(Boolean.FALSE)) {
+            accessToken.getOtherClaims().put("userInfo", aceService.getUserInfoDto(username));
+        }
         return accessToken;
     }
 

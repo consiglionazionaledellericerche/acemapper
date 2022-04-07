@@ -15,7 +15,7 @@
 
     <properties>
         <keycloak.version>12.0.4</keycloak.version>
-        <ace.version>5.3.3</ace.version>
+        <ace.version>5.3.4</ace.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
         <javax.inject.version>1</javax.inject.version>
         <maven.compiler.source>1.8</maven.compiler.source>
