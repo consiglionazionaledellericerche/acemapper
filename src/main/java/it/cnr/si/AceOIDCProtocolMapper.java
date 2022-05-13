@@ -164,16 +164,6 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
         return username.toUpperCase().startsWith("TINIT");
     }
 
-    @Override
-    public AccessToken transformUserInfoToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session, UserSessionModel userSession, ClientSessionContext clientSessionCtx) {
-        AccessToken accessToken = super.transformUserInfoToken(token, mappingModel, session, userSession, clientSessionCtx);
-        String username = userSession.getUser().getUsername();
-        if (!isSpidUsername(username)) {
-            accessToken.getOtherClaims().put("userInfo", aceService.getUserInfoDto(username));
-        }
-        return accessToken;
-    }
-
     public static ProtocolMapperModel create(String name, boolean accessToken, boolean idToken, boolean userInfo) {
         ProtocolMapperModel mapper = new ProtocolMapperModel();
         mapper.setName(name);
