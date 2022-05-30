@@ -101,7 +101,7 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
                     .filter(r -> contextFilter(r, aceContexts))
                     .map(r -> r.getContesto().getSigla())
                     .collect(Collectors.toList());
-            LOGGER.info("Contesti di ACE caricati: " + contesti);
+            LOGGER.info("Contesti di ACE per " + username + " caricati: " + contesti);
 
             final String user = username;
             for(String contesto: contesti) {
@@ -109,6 +109,7 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
                         .filter(a -> a.getContesto().getSigla().equals(contesto))
                         .map(a -> a.getSigla())
                         .collect(Collectors.toSet());
+                LOGGER.info("Ruoli per " + username + " caricati: " + ruoli);
 
                 Map<String, Set<String>> mappa = new HashMap<>();
                 mappa.put("roles", ruoli);
