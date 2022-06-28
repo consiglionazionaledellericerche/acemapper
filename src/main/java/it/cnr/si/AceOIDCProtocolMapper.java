@@ -73,14 +73,11 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
                             KeycloakSession keycloakSession, ClientSessionContext clientSessionCtx) {
 
         Map contexts = new HashMap();
-
         // ldap o spid username
         String username = userSession.getUser().getUsername();
         try {
-
             // nel caso di username spid
             if(isSpidUsername(username)) {
-
                 try {
                     String codiceFiscale = username.substring(6).toUpperCase();
                     String ldapUsername = aceService.getUtenteByCodiceFiscale(codiceFiscale).getUsername();
@@ -89,41 +86,41 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
                     LOGGER.info("utente " + username + " spid non presente in ldap");
                 }
             }
-
             LOGGER.info(username);
 
-            // ruoli
-            List<SimpleRuoloWebDto> simpleRuoloWebDtos = aceService.ruoliAttivi(username);
-
-            String aceContexts = mappingModel.getConfig().get(ACE_CONTEXT_CONFIG);
+            Optional<String> aceContexts = Optional.ofNullable(mappingModel.getConfig().get(ACE_CONTEXT_CONFIG));
             LOGGER.info("ACE Mapper configurato con il contesto di ACE: " + aceContexts);
-            List<String> contesti = simpleRuoloWebDtos.stream()
-                    .filter(r -> contextFilter(r, aceContexts))
-                    .map(r -> r.getContesto().getSigla())
-                    .collect(Collectors.toList());
-            LOGGER.info("Contesti di ACE per " + username + " caricati: " + contesti);
 
             final String user = username;
-            for(String contesto: contesti) {
-                Set<String> ruoli = simpleRuoloWebDtos.stream()
-                        .filter(a -> a.getContesto().getSigla().equals(contesto))
-                        .map(a -> a.getSigla())
-                        .collect(Collectors.toSet());
-                LOGGER.info("Ruoli per " + username + " caricati: " + ruoli);
-
-                Map<String, Set<String>> mappa = new HashMap<>();
-                mappa.put("roles", ruoli);
-                contexts.put(contesto, mappa);
-                // Ruoli assegnti su una specifica Entità organizzativa
-                final List<SsoModelWebDto> rolesWithEo =
-                        aceService.ruoliSsoAttivi(user, contesto)
-                                .stream()
-                                .filter(ssoModelWebDto -> !ssoModelWebDto.getEntitaOrganizzative().isEmpty())
-                                .collect(Collectors.toList());
-                if (!rolesWithEo.isEmpty()) {
-                    ((Map)contexts.get(contesto)).put(ROLES_EO, rolesWithEo);
-                }
+            final List<SsoModelWebDto> roles = new ArrayList<SsoModelWebDto>();
+            if (!aceContexts.isPresent()) {
+                roles.addAll(aceService.ruoliSsoAttivi(user));
+            } else {
+                roles.addAll(aceService.ruoliSsoAttivi(user, aceContexts.get()));
             }
+            final Map<String, List<String>> contestiRuoli = roles
+                    .stream()
+                    .filter(ssoModelWebDto -> Optional.ofNullable(ssoModelWebDto.getSiglaContesto()).isPresent())
+                    .collect(Collectors.groupingBy(SsoModelWebDto::getSiglaContesto, Collectors.mapping(SsoModelWebDto::getSiglaRuolo, Collectors.toList())));
+
+            contestiRuoli.entrySet()
+                    .stream()
+                    .forEach(stringListEntry -> {
+                        Map<String, List<String>> mappa = new HashMap<>();
+                        mappa.put("roles", stringListEntry.getValue());
+                        contexts.put(stringListEntry.getKey(), mappa);
+
+                        // Ruoli assegnti su una specifica Entità organizzativa
+                        final List<SsoModelWebDto> rolesWithEo =
+                                roles
+                                        .stream()
+                                        .filter(ssoModelWebDto -> ssoModelWebDto.getSiglaContesto().equals(stringListEntry.getKey()))
+                                        .filter(ssoModelWebDto -> !ssoModelWebDto.getEntitaOrganizzative().isEmpty())
+                                        .collect(Collectors.toList());
+                        if (!rolesWithEo.isEmpty()) {
+                            ((Map)contexts.get(stringListEntry.getKey())).put(ROLES_EO, rolesWithEo);
+                        }
+                    });
         } catch (Exception e) {
             LOGGER.error(e);
         }
