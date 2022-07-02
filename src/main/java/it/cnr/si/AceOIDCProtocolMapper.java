@@ -131,33 +131,6 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
 
     }
 
-    /*
-     * se non è stato inserito alcun contesto nella maschera di definizione del mapper
-     * ritorna tutti i contesti, altrimenti solo quello dichiarato; inotre è possibile
-     * specificare un insieme di contesti separati dalla virgola
-     */
-    private boolean contextFilter(SimpleRuoloWebDto role, String aceContexts) {
-        if(aceContexts != null && !aceContexts.equals("")){
-            return Arrays.asList(aceContexts.split(","))
-                    .contains(role.getContesto().getSigla());
-        }
-        return true;
-    }
-
-    private List getEoRolesFromContext(String username, String context, String role) {
-        return aceService.ruoliEoAttivi(username).stream()
-                .filter(r -> r.getRuolo().getContesto().getSigla().equals(context))
-                .filter(r -> r.getRuolo().getSigla().equals(role))
-                .filter(r -> Optional.ofNullable(r.getEntitaOrganizzativa()).isPresent())
-                .map(BossDto::getEntitaOrganizzativa)
-                .map(r -> new HashMap(){{
-                    put("id", r.getId());
-                    put("idnsip", r.getIdnsip());
-                    put("sigla", r.getSigla());
-                }})
-                .collect(Collectors.toList());
-    }
-
     private boolean isSpidUsername(String username) {
         return username.toUpperCase().startsWith("TINIT");
     }
