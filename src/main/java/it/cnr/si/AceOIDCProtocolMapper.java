@@ -3,6 +3,7 @@ package it.cnr.si;
 import it.cnr.si.service.AceService;
 import it.cnr.si.service.dto.anagrafica.UserInfoDto;
 import it.cnr.si.service.dto.anagrafica.scritture.BossDto;
+import it.cnr.si.service.dto.anagrafica.scritture.UtenteDto;
 import it.cnr.si.service.dto.anagrafica.simpleweb.SimpleRuoloWebDto;
 import it.cnr.si.service.dto.anagrafica.simpleweb.SsoModelWebDto;
 import org.keycloak.models.ClientSessionContext;
@@ -80,8 +81,10 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
             if(isSpidUsername(username)) {
                 try {
                     String codiceFiscale = username.substring(6).toUpperCase();
-                    String ldapUsername = aceService.getUtenteByCodiceFiscale(codiceFiscale).getUsername();
-                    username = ldapUsername;
+                    final Optional<UtenteDto> utenteByCodiceFiscale = aceService.getUtenteByCodiceFiscale(codiceFiscale);
+                    if (utenteByCodiceFiscale.isPresent()) {
+                        username = utenteByCodiceFiscale.get().getUsername().toLowerCase();
+                    }
                 } catch (Exception e) {
                     LOGGER.info("utente " + username + " spid non presente in ldap");
                 }
