@@ -44,7 +44,7 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
 
     private static final Logger LOGGER = Logger.getLogger(AceOIDCProtocolMapper.class);
 
-    private AceService aceService = new AceService();
+    private AceService aceService;
 
     public List<ProviderConfigProperty> getConfigProperties() {
         return configProperties;
@@ -72,7 +72,9 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
 
     protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession,
                             KeycloakSession keycloakSession, ClientSessionContext clientSessionCtx) {
-
+        if (aceService == null) {
+            aceService = new AceService();
+        }
         Map contexts = new HashMap();
         // ldap o spid username
         String username = userSession.getUser().getUsername();
