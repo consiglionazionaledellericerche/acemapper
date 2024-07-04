@@ -38,6 +38,10 @@ public class AceOIDCProtocolMapper extends AbstractOIDCProtocolMapper implements
         configProperties.add(property);
     }
 
+    static {
+        OIDCAttributeMapperHelper.addIncludeInTokensConfig(configProperties, FullNameMapper.class);
+    }
+
     public static final String PROVIDER_ID = "oidc-customprotocolmapper";
     public static final String DISPLAY_NAME = "ace mapper";
     public static final String HELP_TEXT = "role and context mapper";
